@@ -17,7 +17,7 @@ const generateAccessToken = (userId) => {
   }
 };
 
-// Middleware to athenticate the token
+// Middleware to authenticate the token
 const authenticateToken = async (req, res, next) => {
   const authHeader = req.headers["authorization"];
   const token = authHeader && authHeader.split(" ")[1];

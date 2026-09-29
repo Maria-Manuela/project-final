@@ -3,6 +3,24 @@ import { useModal } from "./ModalContext";
 import { signup, login as authLogin } from "./AuthService";
 import signUpImage from "/images/signUp.jpg";
 
+export const DEMO_ACCOUNT = {
+  username: "demo",
+  password: "demo1234",
+};
+
+const authErrorMessage = (error) => {
+  if (error.response?.data?.error) {
+    return error.response.data.error;
+  }
+  if (error.code === "ECONNABORTED" || error.message?.includes("timeout")) {
+    return "The server is still starting. Wait a moment and try again.";
+  }
+  if (!error.response) {
+    return "Can't reach the server. It may be waking up — wait about a minute and try again.";
+  }
+  return "An error occurred during the authentication process. Try again!";
+};
+
 export const AuthForm = ({ type, onSuccess }) => {
   const { hideModal, login } = useModal();
   const [formMode, setFormMode] = useState(type);
@@ -59,10 +77,7 @@ export const AuthForm = ({ type, onSuccess }) => {
       hideModal();
       onSuccess();
     } catch (error) {
-      setError(
-        error.response?.data?.error ||
-          "An error occurred during the authentication process.Try Again!"
-      );
+      setError(authErrorMessage(error));
     } finally {
       setLoading(false);
     }
@@ -86,7 +101,35 @@ export const AuthForm = ({ type, onSuccess }) => {
           />
         </div>
         <div className="w-full md:w-1/2 p-6 md:p-12">
+          <p className="text-sm text-dark mb-4">
+            First login after a pause can take up to a minute while the free
+            server starts.
+          </p>
+          <p className="text-sm text-dark mb-4">
+            Demo: <span className="font-bold">{DEMO_ACCOUNT.username}</span> /{" "}
+            <span className="font-bold">{DEMO_ACCOUNT.password}</span>
+            <button
+              type="button"
+              className="block mt-1 text-primary underline focus:outline-none"
+              disabled={loading}
+              onClick={() => {
+                setFormMode("login");
+                setUsername(DEMO_ACCOUNT.username);
+                setPassword(DEMO_ACCOUNT.password);
+                setUsernameError("");
+                setPasswordError("");
+                setError(null);
+              }}
+            >
+              Fill demo login
+            </button>
+          </p>
           {error && <div className="text-red-500 mb-4">{error}</div>}
+          {loading && (
+            <p className="text-primary text-sm mb-4">
+              Connecting… if the server was asleep this can take up to a minute.
+            </p>
+          )}
           <form onSubmit={handleSubmit}>
             <input
               type="text"
@@ -135,7 +178,7 @@ export const AuthForm = ({ type, onSuccess }) => {
               className="bg-primary text-light px-4 py-2 rounded hover:bg-secondary w-full"
             >
               {loading
-                ? "Processing..."
+                ? "Starting server..."
                 : formMode === "signup"
                 ? "Sign Up"
                 : "Log In"}

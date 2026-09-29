@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useEffect, useState } from "react";
+import { wakeApi } from "../../axiosConfig";
 import { getProfile } from "../Auth/AuthService";
 
 const ModalContext = createContext();
@@ -22,6 +23,8 @@ export const ModalProvider = ({ children }) => {
   };
 
   useEffect(() => {
+    wakeApi();
+
     const token = localStorage.getItem("authToken");
     if (token) {
       getProfile()
